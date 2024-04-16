@@ -1,4 +1,6 @@
 import * as dotenv from "dotenv";
+import { DataSourceOptions } from "typeorm";
+import { SnakeNamingStrategy } from "typeorm-naming-strategies";
 
 export abstract class ConfigServer {
   constructor() {
@@ -47,6 +49,29 @@ export abstract class ConfigServer {
         return env
     }
     throw new Error(`NODE_ENV is not defined`)
+  }
+
+  /**
+   * Configuración del ORM para la base de datos
+   * 
+   * @readonly
+   * @type {DataSourceOptions}
+   * @memberof ConfigServer
+   */
+  public get typeORMConfig(): DataSourceOptions{
+    return {
+      type: "mysql",
+      host: this.getEnvironment("DB_HOST"),
+      port: this.getNumberEnv("DB_PORT"),
+      username: this.getEnvironment("DB_USER"),
+      password: this.getEnvironment("DB_PASSWORD"),
+      database: this.getEnvironment("DB_DATABASE"),
+      entities: [__dirname + "/../**/*.entity{.ts,.js}"],
+      migrations: [__dirname + "/../../migrations/*{.ts,.js"],
+      synchronize: true,
+      logging: false,
+      namingStrategy: new SnakeNamingStrategy()
+    }
   }
 
   public createPathEnv(path: string): string{
